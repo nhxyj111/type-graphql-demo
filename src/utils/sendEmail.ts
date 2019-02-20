@@ -1,10 +1,10 @@
 import nodemailer from "nodemailer";
 
-export async function sendEmail() {
+export async function sendEmail(email: string, url: string) {
   let account = await nodemailer.createTestAccount();
 
   const transporter = nodemailer.createTransport({
-    host: "stmp.ethereal.email",
+    host: "smtp.ethereal.email",
     port: 587,
     secure: false,
     auth: {
@@ -15,10 +15,9 @@ export async function sendEmail() {
 
   const mailOptions = {
     from: "type-graphql <xxx@xxx.xxx>",
-    to: "xxx@xxx.xxx",
+    to: email,
     subject: "xxx",
-    text: "hello",
-    html: "hello"
+    html: `<a href="${url}">${url}</a>`
   };
 
   let info = await transporter.sendMail(mailOptions);
