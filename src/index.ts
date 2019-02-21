@@ -4,28 +4,17 @@ import cors from "cors";
 import Express from "express";
 import session from "express-session";
 import "reflect-metadata";
-import { buildSchema, formatArgumentValidationError } from "type-graphql";
+import { formatArgumentValidationError } from "type-graphql";
 import { createConnection } from "typeorm";
 import { redis } from "./redis";
+import { createSchema } from "./utils/createSchema";
 
 const SESSION_SECRET = "thisisasesstionsecret";
 
 const main = async () => {
   await createConnection();
 
-  const schema = await buildSchema({
-    // resolvers: [
-    //   RegisterResolver,
-    //   LoginResolver,
-    //   MeResolver,
-    //   ConfirmUserResolver,
-    //   ForgotPasswordResolver
-    // ],
-    resolvers: [__dirname + "/modules/**/*.ts"],
-    authChecker: ({ context: { req } }) => {
-      return !!req.session.userId;
-    }
-  });
+  const schema = await createSchema();
 
   const apolloServer = new ApolloServer({
     schema,
