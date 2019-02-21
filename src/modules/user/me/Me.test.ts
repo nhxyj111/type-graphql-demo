@@ -15,44 +15,41 @@ afterAll(async () => {
   await conn.close();
 });
 
-const registerMutation = `
-mutation Register($data: RegisterInput!) {
-  register(data: $data) {
-    email
+const meQuery = `
+{
+  me {
+    id
     firstName
-    lastName 
+    lastName
+    email
+    name
   }
 }
 `;
 
-describe("Register", () => {
-  it("create user", async () => {
-    const user = {
+describe("Me", () => {
+  it("get user", async () => {
+    const user = await User.create({
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
       email: faker.internet.email(),
       password: faker.internet.password()
-    };
-
-    const { password, ...userNoPass } = user;
+    }).save();
 
     const response = await gCall({
-      source: registerMutation,
-      variableValues: {
-        data: user
-      }
+      source: meQuery,
+      userId: user.id
     });
     expect(response).toMatchObject({
       data: {
-        register: {
-          ...userNoPass
+        me: {
+          id: `${user.id}`,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`
         }
       }
     });
-
-    const dbUser = await User.findOne({ where: { email: user.email } });
-    expect(dbUser).toBeDefined();
-    expect(dbUser!.email).toBe(user.email);
-    expect(dbUser!.confirmed).toBeFalsy();
   });
 });
