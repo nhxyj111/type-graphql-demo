@@ -6,10 +6,6 @@ import session from "express-session";
 import "reflect-metadata";
 import { buildSchema, formatArgumentValidationError } from "type-graphql";
 import { createConnection } from "typeorm";
-import { ConfirmUserResolver } from "./modules/user/ConfirmUser";
-import { LoginResolver } from "./modules/user/Login";
-import { MeResolver } from "./modules/user/Me";
-import { RegisterResolver } from "./modules/user/Register";
 import { redis } from "./redis";
 
 const SESSION_SECRET = "thisisasesstionsecret";
@@ -18,12 +14,14 @@ const main = async () => {
   await createConnection();
 
   const schema = await buildSchema({
-    resolvers: [
-      RegisterResolver,
-      LoginResolver,
-      MeResolver,
-      ConfirmUserResolver
-    ],
+    // resolvers: [
+    //   RegisterResolver,
+    //   LoginResolver,
+    //   MeResolver,
+    //   ConfirmUserResolver,
+    //   ForgotPasswordResolver
+    // ],
+    resolvers: [__dirname + "/modules/**/*.ts"],
     authChecker: ({ context: { req } }) => {
       return !!req.session.userId;
     }
@@ -32,7 +30,7 @@ const main = async () => {
   const apolloServer = new ApolloServer({
     schema,
     formatError: formatArgumentValidationError,
-    context: ({ req }: any) => ({ req })
+    context: ({ req, res }: any) => ({ req, res })
   });
 
   const app = Express();
